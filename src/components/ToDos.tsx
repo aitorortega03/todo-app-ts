@@ -1,27 +1,37 @@
+import { useState } from "react"
 import { ToDoId, ToDoType, type ListOfToDos } from "../types"
 import { ToDo } from "./ToDo"
 
 interface Props {
-  todos: ListOfToDos
+  toDos: ListOfToDos
   onToggleCompleted: ({ id, completed }: Pick<ToDoType, 'id' | 'completed'>) => void
   onRemoveToDo: (id: ToDoId) => void
+  onUpdateToDo: (params: { id: string, title: string }) => void
 }
 
-export const ToDos: React.FC<Props> = ({ todos, onRemoveToDo, onToggleCompleted }) => {
+export const ToDos: React.FC<Props> = ({ toDos, onRemoveToDo, onToggleCompleted, onUpdateToDo }) => {
+  const [isEditing, setIsEditing] = useState('')
 
   return (
     <ul className='todo-list'>
-      {todos.map(todo => (
+      {toDos.map(toDo => (
         <li
-          key={todo.id}
-          className={todo.completed ? 'completed' : ''}>
+          key={toDo.id}
+          onDoubleClick={() => { setIsEditing(toDo.id) }}
+          className={`
+            ${toDo.completed ? 'completed' : ''}
+            ${isEditing === toDo.id ? 'editing' : ''}
+          `}>
           <ToDo
-            key={todo.id}
-            id={todo.id}
-            title={todo.title}
-            completed={todo.completed}
+            key={toDo.id}
+            id={toDo.id}
+            title={toDo.title}
+            completed={toDo.completed}
+            isEditing={isEditing}
+            setIsEditing={setIsEditing}
             onToggleCompleted={onToggleCompleted}
             onRemoveToDo={onRemoveToDo}
+            onUpdateToDo={onUpdateToDo}
           />
         </li>
       ))}

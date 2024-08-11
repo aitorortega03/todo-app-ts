@@ -61,6 +61,21 @@ const App: React.FC = () => {
     setToDos([...toDos, newTodo])
   }
 
+  const handleUpdateTitle = ({ id, title }: { id: string, title: string }): void => {
+    const newTodos = toDos.map((todo) => {
+      if (todo.id === id) {
+        return {
+          ...todo,
+          title
+        }
+      }
+
+      return todo
+    })
+
+    setToDos(newTodos)
+  }
+
   return (
     <div className='todoapp'>
       <Header
@@ -69,7 +84,8 @@ const App: React.FC = () => {
       <ToDos
         onToggleCompleted={handleCompleted}
         onRemoveToDo={handleRemove}
-        todos={filteredToDos}
+        onUpdateToDo={handleUpdateTitle}
+        toDos={filteredToDos}
       />
       <Footer
         activeCount={activeCount}
