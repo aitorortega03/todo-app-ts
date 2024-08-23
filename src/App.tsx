@@ -1,23 +1,27 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { ToDos } from './components/ToDos'
-import { ToDoType, ToDoId, FilterValue } from './types'
+import { ToDoType, ToDoId, FilterValue, ListOfToDos } from './types'
 import { TODO_FILTERS } from './const'
 import { Footer } from './components/Footer'
 import { Header } from './components/Header'
 
-const mockTodos = [
-  { id: '1', title: 'Aprender React', completed: false },
-  { id: '2', title: 'Aprender TypeScript', completed: true },
-  { id: '3', title: 'Aprender Vite', completed: false },
-]
-
 const App: React.FC = () => {
-  const [toDos, setToDos] = useState(mockTodos)
+  const [toDos, setToDos] = useState<ListOfToDos>([])
   const [filterSelected, setFilterSelected] = useState<FilterValue>(TODO_FILTERS.ALL)
+
+  useEffect(() => {
+    fetch('https://my-json-server.typicode.com/aitorortega03/todo-backend/todos')
+      .then(res => res.json())
+      .then(data => setToDos(data));
+  }, []);
 
   const handleRemove = ({ id }: ToDoId) => {
     const newToDos = toDos.filter(toDo => toDo.id !== id)
     setToDos(newToDos)
+    fetch(`https://my-json-server.typicode.com/aitorortega03/todo-backend/todos/${id}`, {
+      method: 'DELETE',
+    }).then(res => res.json())
+      .then(data => console.log(data))
   }
 
   const handleFilterChange = (filter: FilterValue): void => {
@@ -31,7 +35,19 @@ const App: React.FC = () => {
           ...toDo,
           completed
         }
+        
       }
+      fetch(`https://my-json-server.typicode.com/aitorortega03/todo-backend/todos/${id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...toDo,
+          completed
+        }),
+      }).then(respuesta => respuesta.json())
+        .then(data => console.log(data))
       return toDo
     })
     setToDos(newToDos)
@@ -49,6 +65,14 @@ const App: React.FC = () => {
   const handleRemoveAllCompleted = (): void => {
     const newToDos = toDos.filter(toDo => !toDo.completed)
     setToDos(newToDos)
+    toDos.forEach(toDo => {
+      if (toDo.completed) {
+        fetch(`https://my-json-server.typicode.com/aitorortega03/todo-backend/todos/${toDo.id}`, {
+          method: 'DELETE',
+        }).then(res => res.json())
+          .then(data => console.log(data))
+      }
+    })
   }
 
   const handleSaveToDo = (title: string) => {
@@ -59,6 +83,14 @@ const App: React.FC = () => {
     }
 
     setToDos([...toDos, newTodo])
+    fetch('https://my-json-server.typicode.com/aitorortega03/todo-backend/todos', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(newTodo),
+    }).then(res => res.json())
+      .then(data => console.log(data))
   }
 
   const handleUpdateTitle = ({ id, title }: { id: string, title: string }): void => {
@@ -69,6 +101,17 @@ const App: React.FC = () => {
           title
         }
       }
+      fetch(`https://my-json-server.typicode.com/aitorortega03/todo-backend/todos/${id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...todo,
+          title
+        }),
+      }).then(respuesta => respuesta.json())
+        .then(data => console.log(data))
 
       return todo
     })
